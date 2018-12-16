@@ -6,7 +6,8 @@
         <title>Star Notary</title>
         <link rel="stylesheet" type="text/css" href="style.css">
 
-        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js" integrity="sha256-nWBTbvxhJgjslRyuAKJHK+XcZPlCnmIAAMixz6EefVk=" crossorigin="anonymous"></script>
+
     </head>
 
     <body>
@@ -84,14 +85,20 @@
 
         <script>
 
-            // Instantiate and set Ganache as your provider
-            //var provider = "http://localhost:8545"
-            var provider = "https://rinkeby.infura.io/v3/df52c8543c084c78a9dd90cd46ca3752"
-            web3 = new Web3(new Web3.providers.HttpProvider(provider));
-            // The default (top) wallet account from a list of test accounts
-            web3.eth.defaultAccount = web3.eth.accounts[0];
-            // The interface definition for your smart contract (the ABI)
-            var StarNotary = web3.eth.contract(
+          if(typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider) // what Metamask injected
+          } else {
+            //Instantiate and set Ganache as your provider
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+            document.getElementById("star-messages").innerText = "Connected to local Ganache network with out metamask"
+          }
+          web3.eth.defaultAccount = web3.eth.accounts[0];
+          // Rinkeby address
+            contract_address = '0x9768a1732c206ce142008928a0af47af5a9bf375'
+            // local ganache address
+            //contract_address = '0xb11be35b571e91208ccb3108117cdb95af6ed433'
+            var StarNotary = new web3.eth.Contract(
                 [
                   {
                     "constant": false,
@@ -531,13 +538,10 @@
                     "type": "function"
                   }
                 ],
-
-                {"gas": 3000000}
+                contract_address
             );
             // Grab the contract at specified deployed address with the interface defined by the ABI
-
             //var starNotary = StarNotary.at('0xb11be35b571e91208ccb3108117cdb95af6ed433');
-            var starNotary = StarNotary.at('0x9768a1732c206ce142008928a0af47af5a9bf375');
 
             // Enable claim button being clicked
 
@@ -560,15 +564,15 @@
               cent = document.getElementById('starclaim_cent').value
               tokenid = document.getElementById('starclaim_id').value
 
-              starNotary.createStar(name, story, dec, mag, cent, tokenid, function (error, result){
-                if (!error) {
+              StarNotary.methods.createStar(name, story, dec,
+                mag, cent, tokenid).send(function (error, result){
+                  if (!error) {
                     document.getElementById("star-messages").innerText = "Star Created"
-                } else {
+                  }else{
                     document.getElementById("star-messages").innerText = error;
+                  }
                 }
-              }
-            )
-
+              );
             }
 
             function queryStar(){
@@ -576,7 +580,7 @@
               // gets token id to query
               tokenid = document.getElementById('starinfo_id').value
               // diplays the owner of the token
-              starNotary.ownerOf(tokenid, function (error, result) {
+              StarNotary.methods.ownerOf(tokenid).call(function (error, result) {
                   if (!error) {
                       document.getElementById('star-owner').innerText = result
                   } else {
@@ -584,7 +588,7 @@
                   }
               });
               // displays rest of the information of the star
-              starNotary.tokenIdToStarInfo(tokenid, function (error, result) {
+              StarNotary.methods.tokenIdToStarInfo(tokenid).call(function (error, result) {
                   if (!error) {
                       document.getElementById('star-name').innerText = result[0];
                       document.getElementById('star-story').innerText = result[1];
@@ -594,7 +598,7 @@
                   } else {
                     document.getElementById("star-messages").innerText = error;
                   }
-              })
+              });
 
             }
 
@@ -607,14 +611,16 @@
               mag = '4'
               cent = '4'
               id = 4
-              starNotary.createStar(name, story, dec, mag, cent, id, function (error, result){
+
+              StarNotary.methods.createStar(name, story, dec, mag, cent, id).send({"from": "0x0De2D759Dc6C9f79B8aae651d2f71Ad12699e61C","gas": 3000000},
+              function (error, result){
                 if (!error) {
-                    document.getElementById("star-messages").innerText = "Star Created"
-                } else {
-                    document.getElementById("star-messages").innerText = error;
+                  document.getElementById("star-messages").innerText = "Star Created"
+                }else{
+                  document.getElementById("star-messages").innerText = error;
                 }
               }
-            )
+            );
             }
 
 
