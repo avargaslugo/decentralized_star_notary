@@ -93,8 +93,8 @@
 
             document.getElementById("star-messages").innerText = "Connected to local Ganache network with out metamask"
           }
-          web3.eth.defaultAccount = web3.eth.accounts[0];
-          // Rinkeby address
+          account = web3.eth.accounts[0];
+            // Rinkeby contract address
             contract_address = '0x9768a1732c206ce142008928a0af47af5a9bf375'
             // local ganache address
             //contract_address = '0xb11be35b571e91208ccb3108117cdb95af6ed433'
@@ -564,15 +564,19 @@
               cent = document.getElementById('starclaim_cent').value
               tokenid = document.getElementById('starclaim_id').value
 
-              StarNotary.methods.createStar(name, story, dec,
-                mag, cent, tokenid).send(function (error, result){
-                  if (!error) {
-                    document.getElementById("star-messages").innerText = "Star Created"
-                  }else{
-                    document.getElementById("star-messages").innerText = error;
+              web3.eth.getAccounts(function(error, accounts){
+                const account =  accounts[0]
+
+                StarNotary.methods.createStar(name, story, dec,
+                  mag, cent, tokenid).send({"from": account, "gas": 3000000},function (error, result){
+                    if (!error) {
+                      document.getElementById("star-messages").innerText = "Star Created"
+                    }else{
+                      document.getElementById("star-messages").innerText = error;
+                    }
                   }
-                }
-              );
+                );
+              });
             }
 
             function queryStar(){
@@ -584,7 +588,7 @@
                   if (!error) {
                       document.getElementById('star-owner').innerText = result
                   } else {
-
+                    document.getElementById("star-messages").innerText = error;
                   }
               });
               // displays rest of the information of the star
@@ -600,27 +604,6 @@
                   }
               });
 
-            }
-
-            // function to test different functionalities
-            function claimButtonClicked(){
-              resetFields()
-              name = 'test_star'
-              story = 'random star'
-              dec = '4'
-              mag = '4'
-              cent = '4'
-              id = 4
-
-              StarNotary.methods.createStar(name, story, dec, mag, cent, id).send({"from": "0x0De2D759Dc6C9f79B8aae651d2f71Ad12699e61C","gas": 3000000},
-              function (error, result){
-                if (!error) {
-                  document.getElementById("star-messages").innerText = "Star Created"
-                }else{
-                  document.getElementById("star-messages").innerText = error;
-                }
-              }
-            );
             }
 
 
